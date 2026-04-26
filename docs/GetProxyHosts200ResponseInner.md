@@ -25,6 +25,7 @@ Name | Type | Description | Notes
 **Locations** | [**[]GetProxyHosts200ResponseInnerLocationsInner**](GetProxyHosts200ResponseInnerLocationsInner.md) |  | 
 **HstsEnabled** | **bool** | Is HSTS Enabled | 
 **HstsSubdomains** | **bool** | Is HSTS applicable to all subdomains | 
+**TrustForwardedProto** | **bool** | Trust the forwarded headers | 
 **Certificate** | Pointer to [**NullableGetProxyHosts200ResponseInnerCertificate**](GetProxyHosts200ResponseInnerCertificate.md) |  | [optional] 
 **Owner** | Pointer to [**GetAuditLogs200ResponseInnerUser**](GetAuditLogs200ResponseInnerUser.md) |  | [optional] 
 **AccessList** | Pointer to [**NullableGetProxyHosts200ResponseInnerAccessList**](GetProxyHosts200ResponseInnerAccessList.md) |  | [optional] 
@@ -33,7 +34,7 @@ Name | Type | Description | Notes
 
 ### NewGetProxyHosts200ResponseInner
 
-`func NewGetProxyHosts200ResponseInner(id int64, createdOn string, modifiedOn string, ownerUserId int64, domainNames []string, forwardHost string, forwardPort int64, accessListId int64, certificateId GetProxyHosts200ResponseInnerCertificateId, sslForced bool, cachingEnabled bool, blockExploits bool, advancedConfig string, meta map[string]interface{}, allowWebsocketUpgrade bool, http2Support bool, forwardScheme string, enabled bool, locations []GetProxyHosts200ResponseInnerLocationsInner, hstsEnabled bool, hstsSubdomains bool, ) *GetProxyHosts200ResponseInner`
+`func NewGetProxyHosts200ResponseInner(id int64, createdOn string, modifiedOn string, ownerUserId int64, domainNames []string, forwardHost string, forwardPort int64, accessListId int64, certificateId GetProxyHosts200ResponseInnerCertificateId, sslForced bool, cachingEnabled bool, blockExploits bool, advancedConfig string, meta map[string]interface{}, allowWebsocketUpgrade bool, http2Support bool, forwardScheme string, enabled bool, locations []GetProxyHosts200ResponseInnerLocationsInner, hstsEnabled bool, hstsSubdomains bool, trustForwardedProto bool, ) *GetProxyHosts200ResponseInner`
 
 NewGetProxyHosts200ResponseInner instantiates a new GetProxyHosts200ResponseInner object
 This constructor will assign default values to properties that have it defined,
@@ -466,6 +467,26 @@ and a boolean to check if the value has been set.
 `func (o *GetProxyHosts200ResponseInner) SetHstsSubdomains(v bool)`
 
 SetHstsSubdomains sets HstsSubdomains field to given value.
+
+
+### GetTrustForwardedProto
+
+`func (o *GetProxyHosts200ResponseInner) GetTrustForwardedProto() bool`
+
+GetTrustForwardedProto returns the TrustForwardedProto field if non-nil, zero value otherwise.
+
+### GetTrustForwardedProtoOk
+
+`func (o *GetProxyHosts200ResponseInner) GetTrustForwardedProtoOk() (*bool, bool)`
+
+GetTrustForwardedProtoOk returns a tuple with the TrustForwardedProto field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTrustForwardedProto
+
+`func (o *GetProxyHosts200ResponseInner) SetTrustForwardedProto(v bool)`
+
+SetTrustForwardedProto sets TrustForwardedProto field to given value.
 
 
 ### GetCertificate

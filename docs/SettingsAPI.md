@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 ## GetSetting
 
-> GetSetting200Response GetSetting(ctx, settingID).Execute()
+> GetSettings200ResponseInner GetSetting(ctx, settingID).Execute()
 
 Get a setting
 
@@ -38,7 +38,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `SettingsAPI.GetSetting``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `GetSetting`: GetSetting200Response
+	// response from `GetSetting`: GetSettings200ResponseInner
 	fmt.Fprintf(os.Stdout, "Response from `SettingsAPI.GetSetting`: %v\n", resp)
 }
 ```
@@ -62,7 +62,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**GetSetting200Response**](GetSetting200Response.md)
+[**GetSettings200ResponseInner**](GetSettings200ResponseInner.md)
 
 ### Authorization
 
@@ -139,7 +139,7 @@ Other parameters are passed through a pointer to a apiGetSettingsRequest struct 
 
 ## UpdateSetting
 
-> GetSetting200Response UpdateSetting(ctx, settingID).UpdateSettingRequest(updateSettingRequest).Execute()
+> GetSettings200ResponseInner UpdateSetting(ctx, settingID).UpdateSettingRequest(updateSettingRequest).Execute()
 
 Update a setting
 
@@ -166,7 +166,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `SettingsAPI.UpdateSetting``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `UpdateSetting`: GetSetting200Response
+	// response from `UpdateSetting`: GetSettings200ResponseInner
 	fmt.Fprintf(os.Stdout, "Response from `SettingsAPI.UpdateSetting`: %v\n", resp)
 }
 ```
@@ -191,7 +191,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**GetSetting200Response**](GetSetting200Response.md)
+[**GetSettings200ResponseInner**](GetSettings200ResponseInner.md)
 
 ### Authorization
 

@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 **Enabled** | **bool** | Is Enabled | 
 **CertificateId** | Pointer to [**GetProxyHosts200ResponseInnerCertificateId**](GetProxyHosts200ResponseInnerCertificateId.md) |  | [optional] 
 **Meta** | **map[string]interface{}** |  | 
-**Certificate** | Pointer to [**GetRedirectionHosts200ResponseInnerCertificate**](GetRedirectionHosts200ResponseInnerCertificate.md) |  | [optional] 
+**Certificate** | Pointer to [**NullableGetProxyHosts200ResponseInnerCertificate**](GetProxyHosts200ResponseInnerCertificate.md) |  | [optional] 
 **Owner** | Pointer to [**GetAuditLogs200ResponseInnerUser**](GetAuditLogs200ResponseInnerUser.md) |  | [optional] 
 
 ## Methods
@@ -285,20 +285,20 @@ SetMeta sets Meta field to given value.
 
 ### GetCertificate
 
-`func (o *GetStreams200ResponseInner) GetCertificate() GetRedirectionHosts200ResponseInnerCertificate`
+`func (o *GetStreams200ResponseInner) GetCertificate() GetProxyHosts200ResponseInnerCertificate`
 
 GetCertificate returns the Certificate field if non-nil, zero value otherwise.
 
 ### GetCertificateOk
 
-`func (o *GetStreams200ResponseInner) GetCertificateOk() (*GetRedirectionHosts200ResponseInnerCertificate, bool)`
+`func (o *GetStreams200ResponseInner) GetCertificateOk() (*GetProxyHosts200ResponseInnerCertificate, bool)`
 
 GetCertificateOk returns a tuple with the Certificate field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetCertificate
 
-`func (o *GetStreams200ResponseInner) SetCertificate(v GetRedirectionHosts200ResponseInnerCertificate)`
+`func (o *GetStreams200ResponseInner) SetCertificate(v GetProxyHosts200ResponseInnerCertificate)`
 
 SetCertificate sets Certificate field to given value.
 
@@ -308,6 +308,16 @@ SetCertificate sets Certificate field to given value.
 
 HasCertificate returns a boolean if a field has been set.
 
+### SetCertificateNil
+
+`func (o *GetStreams200ResponseInner) SetCertificateNil(b bool)`
+
+ SetCertificateNil sets the value for Certificate to be an explicit nil
+
+### UnsetCertificate
+`func (o *GetStreams200ResponseInner) UnsetCertificate()`
+
+UnsetCertificate ensures that no value is present for Certificate, not even an explicit nil
 ### GetOwner
 
 `func (o *GetStreams200ResponseInner) GetOwner() GetAuditLogs200ResponseInnerUser`

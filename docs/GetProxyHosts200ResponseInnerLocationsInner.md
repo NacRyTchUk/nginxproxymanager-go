@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | Pointer to **int64** |  | [optional] 
+**Id** | Pointer to **NullableInt64** |  | [optional] 
 **Path** | **string** |  | 
 **ForwardScheme** | **string** |  | 
 **ForwardHost** | **string** |  | 
@@ -56,6 +56,16 @@ SetId sets Id field to given value.
 
 HasId returns a boolean if a field has been set.
 
+### SetIdNil
+
+`func (o *GetProxyHosts200ResponseInnerLocationsInner) SetIdNil(b bool)`
+
+ SetIdNil sets the value for Id to be an explicit nil
+
+### UnsetId
+`func (o *GetProxyHosts200ResponseInnerLocationsInner) UnsetId()`
+
+UnsetId ensures that no value is present for Id, not even an explicit nil
 ### GetPath
 
 `func (o *GetProxyHosts200ResponseInnerLocationsInner) GetPath() string`

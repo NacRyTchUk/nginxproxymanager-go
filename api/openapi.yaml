@@ -7,7 +7,7 @@ info:
 
     For more information, visit the [Nginx Proxy Manager Documentation](https://nginxproxymanager.com).
   title: Nginx Proxy Manager API
-  version: 2.13.4
+  version: 2.14.0
 servers:
 - url: http://localhost/api
 tags:
@@ -149,7 +149,7 @@ paths:
                         access_lists: manage
                         certificates: manage
               schema:
-                $ref: "#/components/schemas/getAuditLog_200_response"
+                $ref: "#/components/schemas/getAuditLogs_200_response_inner"
           description: 200 response
       security:
       - bearerAuth:
@@ -946,6 +946,7 @@ paths:
                     locations: []
                     hsts_enabled: false
                     hsts_subdomains: false
+                    trust_forwarded_proto: false
               schema:
                 description: Proxy Hosts list
                 items:
@@ -1002,6 +1003,7 @@ paths:
                     locations: []
                     hsts_enabled: false
                     hsts_subdomains: false
+                    trust_forwarded_proto: false
                     certificate: null
                     owner:
                       id: 1
@@ -1098,6 +1100,7 @@ paths:
                     locations: []
                     hsts_enabled: false
                     hsts_subdomains: false
+                    trust_forwarded_proto: false
                     owner:
                       id: 1
                       created_on: 2025-10-28T00:50:24.000Z
@@ -1169,6 +1172,7 @@ paths:
                     locations: []
                     hsts_enabled: false
                     hsts_subdomains: false
+                    trust_forwarded_proto: false
                     owner:
                       id: 1
                       created_on: 2025-10-28T00:50:24.000Z
@@ -2377,7 +2381,7 @@ paths:
                     value: congratulations
                     meta: {}
               schema:
-                $ref: "#/components/schemas/getSetting_200_response"
+                $ref: "#/components/schemas/getSettings_200_response_inner"
           description: 200 response
       security:
       - bearerAuth:
@@ -2423,7 +2427,7 @@ paths:
                     value: congratulations
                     meta: {}
               schema:
-                $ref: "#/components/schemas/getSetting_200_response"
+                $ref: "#/components/schemas/getSettings_200_response_inner"
           description: 200 response
       security:
       - bearerAuth:
@@ -2473,11 +2477,58 @@ paths:
                     expires: 2025-02-04T20:40:46.340Z
                     token: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.ey...xaHKYr3Kk6MvkUjcC4
               schema:
-                $ref: "#/components/schemas/refreshToken_200_response"
+                $ref: "#/components/schemas/requestToken_200_response"
           description: 200 response
       summary: Request a new access token from credentials
       tags:
       - tokens
+  /tokens/2fa:
+    post:
+      operationId: loginWith2FA
+      requestBody:
+        content:
+          application/json:
+            example:
+              challenge_token: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.ey...xaHKYr3Kk6MvkUjcC4
+              code: "012345"
+            schema:
+              $ref: "#/components/schemas/loginWith2FA_request"
+        description: 2fa Challenge Payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                default:
+                  value:
+                    expires: 2025-02-04T20:40:46.340Z
+                    token: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.ey...xaHKYr3Kk6MvkUjcC4
+              schema:
+                $ref: "#/components/schemas/refreshToken_200_response"
+          description: 200 response
+      summary: Verify 2FA code and get full token
+      tags:
+      - tokens
+  /version/check:
+    get:
+      operationId: checkVersion
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                default:
+                  value:
+                    current: v2.12.0
+                    latest: v2.13.4
+                    update_available: true
+              schema:
+                $ref: "#/components/schemas/checkVersion_200_response"
+          description: 200 response
+      summary: Returns any new version data from github
+      tags:
+      - public
   /users:
     get:
       operationId: getUsers
@@ -2701,6 +2752,193 @@ paths:
       summary: Update a User
       tags:
       - users
+  /users/{userID}/2fa:
+    delete:
+      operationId: disableUser2fa
+      parameters:
+      - description: User ID
+        example: 2
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      - description: 2fa Code
+        example: "012345"
+        explode: true
+        in: query
+        name: code
+        required: true
+        schema:
+          example: "012345"
+          maxLength: 6
+          minLength: 6
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                default:
+                  value: true
+              schema:
+                type: boolean
+          description: 200 response
+      summary: Disable 2fa for user
+      tags:
+      - users
+    get:
+      operationId: getUser2faStatus
+      parameters:
+      - description: User ID
+        example: 2
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                default:
+                  value:
+                    enabled: false
+                    backup_codes_remaining: 0
+              schema:
+                $ref: "#/components/schemas/getUser2faStatus_200_response"
+          description: 200 response
+      security:
+      - bearerAuth: []
+      summary: Get user 2fa Status
+      tags:
+      - users
+    post:
+      operationId: setupUser2fa
+      parameters:
+      - description: User ID
+        example: 2
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                default:
+                  value:
+                    secret: JZYCEBIEEJYUGPQM
+                    otpauth_url: otpauth://totp/Nginx%20Proxy%20Manager:jc%40jc21.com?secret=JZYCEBIEEJYUGPQM&period=30&digits=6&algorithm=SHA1&issuer=Nginx%20Proxy%20Manager
+              schema:
+                $ref: "#/components/schemas/setupUser2fa_200_response"
+          description: 200 response
+      summary: "Start 2FA setup, returns QR code URL"
+      tags:
+      - users
+  /users/{userID}/2fa/enable:
+    post:
+      operationId: enableUser2fa
+      parameters:
+      - description: User ID
+        example: 2
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              code: "123456"
+            schema:
+              $ref: "#/components/schemas/enableUser2fa_request"
+        description: Verification Payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                default:
+                  value:
+                    backup_codes:
+                    - 6CD7CB06
+                    - 495302F3
+                    - D8037852
+                    - A6FFC956
+                    - BC1A1851
+                    - A05E644F
+                    - A406D2E8
+                    - 0AE3C522
+              schema:
+                $ref: "#/components/schemas/enableUser2fa_200_response"
+          description: 200 response
+      summary: Verify code and enable 2FA
+      tags:
+      - users
+  /users/{userID}/2fa/backup-codes:
+    post:
+      operationId: regenUser2faCodes
+      parameters:
+      - description: User ID
+        example: 2
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              code: "123456"
+            schema:
+              $ref: "#/components/schemas/enableUser2fa_request"
+        description: Verification Payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                default:
+                  value:
+                    backup_codes:
+                    - 6CD7CB06
+                    - 495302F3
+                    - D8037852
+                    - A6FFC956
+                    - BC1A1851
+                    - A05E644F
+                    - A406D2E8
+                    - 0AE3C522
+              schema:
+                $ref: "#/components/schemas/enableUser2fa_200_response"
+          description: 200 response
+      summary: Regenerate 2FA backup codes
+      tags:
+      - users
   /users/{userID}/auth:
     put:
       operationId: updateUserAuth
@@ -2841,30 +3079,37 @@ components:
           description: Visibility level
           example: all
           pattern: ^(all|user)$
+          type: string
         proxy_hosts:
           description: Proxy Hosts access level
           example: manage
           pattern: ^(manage|view|hidden)$
+          type: string
         redirection_hosts:
           description: Redirection Hosts access level
           example: manage
           pattern: ^(manage|view|hidden)$
+          type: string
         dead_hosts:
           description: Dead Hosts access level
           example: manage
           pattern: ^(manage|view|hidden)$
+          type: string
         streams:
           description: Streams access level
           example: manage
           pattern: ^(manage|view|hidden)$
+          type: string
         access_lists:
           description: Access Lists access level
           example: hidden
           pattern: ^(manage|view|hidden)$
+          type: string
         certificates:
           description: Certificates access level
           example: view
           pattern: ^(manage|view|hidden)$
+          type: string
       required:
       - access_lists
       - certificates
@@ -2873,43 +3118,6 @@ components:
       - redirection_hosts
       - streams
       - visibility
-    getSetting_200_response:
-      additionalProperties: {}
-      description: Setting object
-      example:
-        meta:
-          redirect: http://example.com
-          html: <h1>404</h1>
-        name: Default Site
-        description: What to show when Nginx is hit with an unknown Host
-        id: default-site
-        value: congratulations
-      properties:
-        id:
-          description: Setting ID
-          example: default-site
-          minLength: 1
-        name:
-          description: Setting Display Name
-          example: Default Site
-          minLength: 1
-        description:
-          description: Meaningful description
-          example: What to show when Nginx is hit with an unknown Host
-          minLength: 1
-        value:
-          $ref: "#/components/schemas/getSetting_200_response_value"
-        meta:
-          description: Extra metadata
-          example:
-            redirect: http://example.com
-            html: <h1>404</h1>
-      required:
-      - description
-      - id
-      - meta
-      - name
-      - value
     loginAsUser_200_response:
       additionalProperties: {}
       description: Login object
@@ -2939,9 +3147,11 @@ components:
         token:
           description: JWT Token
           example: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.ey...xaHKYr3Kk6MvkUjcC4
+          type: string
         expires:
           description: Token Expiry Timestamp
           example: 2020-01-30T10:43:44.000Z
+          type: string
         user:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
       required:
@@ -2954,9 +3164,11 @@ components:
         provider:
           example: letsencrypt
           pattern: ^(letsencrypt|other)$
+          type: string
         nice_name:
           description: Nice Name for the custom certificate
           example: My Custom Cert
+          type: string
         domain_names:
           description: Domain Names separated by a comma
           example:
@@ -2964,7 +3176,9 @@ components:
           - www.example.com
           items:
             pattern: "^[^&| @!#%^();:/\\\\}{=+?<>,~`'\"]+$"
+            type: string
           maxItems: 100
+          type: array
           uniqueItems: true
         meta:
           $ref: "#/components/schemas/getCertificates_200_response_inner_meta"
@@ -2997,34 +3211,44 @@ components:
           description: User ID
           example: 1
           minimum: 1
+          type: integer
         created_on:
           description: Created Date
           example: 2020-01-30T09:36:08.000Z
+          type: string
         modified_on:
           description: Modified Date
           example: 2020-01-30T09:41:04.000Z
+          type: string
         is_disabled:
           description: Is user Disabled
           example: true
+          type: boolean
         email:
           description: Email
           example: jc@jc21.com
           minLength: 3
+          type: string
         name:
           description: Name
           example: Jamie Curnow
           minLength: 1
+          type: string
         nickname:
           description: Nickname
           example: James
+          type: string
         avatar:
           description: "Gravatar URL based on email, without scheme"
           example: //www.gravatar.com/avatar/6193176330f8d38747f038c170ddb193?default=mm
+          type: string
         roles:
           description: Roles applied
           example:
           - admin
-          items: {}
+          items:
+            type: string
+          type: array
         permissions:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user_permissions"
       required:
@@ -3048,36 +3272,35 @@ components:
       properties:
         cn:
           example: example.com
+          type: string
         issuer:
           example: "C = US, O = Let's Encrypt, CN = E5"
+          type: string
         dates:
           $ref: "#/components/schemas/validateCertificates_200_response_certificate_dates"
       required:
       - cn
       - dates
       - issuer
-    getRedirectionHosts_200_response_inner_certificate:
-      oneOf:
-      - example: null
-      - $ref: "#/components/schemas/getCertificates_200_response_inner"
-      example: null
-    getSetting_200_response_value:
-      anyOf:
-      - minLength: 1
-      - {}
-      - {}
-      - {}
-      - items: {}
-      description: Value in almost any form
-      example: congratulations
+    enableUser2fa_request:
+      additionalProperties: {}
+      properties:
+        code:
+          example: "123456"
+          maxLength: 8
+          minLength: 6
+          type: string
+      required:
+      - code
     getSettings_200_response_inner_value:
       anyOf:
       - minLength: 1
         type: string
-      - {}
-      - {}
-      - {}
+      - type: integer
+      - type: object
+      - type: number
       - items: {}
+        type: array
       description: Value in almost any form
       example: congratulations
     updateStream_request:
@@ -3088,12 +3311,14 @@ components:
           example: 9090
           maximum: 65535
           minimum: 1
+          type: integer
         forwarding_host:
           $ref: "#/components/schemas/getStreams_200_response_inner_forwarding_host"
         forwarding_port:
           example: 80
           maximum: 65535
           minimum: 1
+          type: integer
         tcp_forwarding:
           example: true
           type: boolean
@@ -3150,12 +3375,14 @@ components:
           example: 9090
           maximum: 65535
           minimum: 1
+          type: integer
         forwarding_host:
           $ref: "#/components/schemas/getStreams_200_response_inner_forwarding_host"
         forwarding_port:
           example: 80
           maximum: 65535
           minimum: 1
+          type: integer
         tcp_forwarding:
           example: true
           type: boolean
@@ -3177,6 +3404,7 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
       required:
       - forwarding_host
@@ -3196,6 +3424,7 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         certificate_id:
           $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate_id"
@@ -3228,14 +3457,17 @@ components:
           example: |-
             -----BEGIN CERTIFICATE-----
             MIID...-----END CERTIFICATE-----
+          type: string
         certificate_key:
           example: |-
             -----BEGIN CERTIFICATE-----
             MIID...-----END CERTIFICATE-----
+          type: string
         intermediate_certificate:
           example: |-
             -----BEGIN CERTIFICATE-----
             MIID...-----END CERTIFICATE-----
+          type: string
       required:
       - certificate
       - certificate_key
@@ -3300,9 +3532,11 @@ components:
         provider:
           example: letsencrypt
           pattern: ^(letsencrypt|other)$
+          type: string
         nice_name:
           description: Nice Name for the custom certificate
           example: My Custom Cert
+          type: string
         domain_names:
           description: Domain Names separated by a comma
           example:
@@ -3310,12 +3544,15 @@ components:
           - www.example.com
           items:
             pattern: "^[^&| @!#%^();:/\\\\}{=+?<>,~`'\"]+$"
+            type: string
           maxItems: 100
+          type: array
           uniqueItems: true
         expires_on:
           description: Date and time of expiration
           example: 2025-10-28T04:17:54.000Z
           readOnly: true
+          type: string
         owner:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
         meta:
@@ -3335,8 +3572,10 @@ components:
       example:
         html: <p>hello world</p>
       properties:
-        redirect: {}
-        html: {}
+        redirect:
+          type: string
+        html:
+          type: string
     createAccessList_request:
       additionalProperties: {}
       properties:
@@ -3356,12 +3595,14 @@ components:
             password: pass
           items:
             $ref: "#/components/schemas/createAccessList_request_items_inner"
+          type: array
         clients:
           example:
           - directive: allow
             address: 192.168.0.0/24
           items:
             $ref: "#/components/schemas/createAccessList_request_clients_inner"
+          type: array
       required:
       - name
     health_200_response_version:
@@ -3375,12 +3616,15 @@ components:
         major:
           example: 2
           minimum: 0
+          type: integer
         minor:
           example: 10
           minimum: 0
+          type: integer
         revision:
           example: 1
           minimum: 0
+          type: integer
       required:
       - major
       - minor
@@ -3403,16 +3647,19 @@ components:
             -----BEGIN CERTIFICATE-----
             MIID...-----END CERTIFICATE-----
           minLength: 1
+          type: string
         certificate_key:
           example: |-
             -----BEGIN CERTIFICATE-----
             MIID...-----END CERTIFICATE-----
           minLength: 1
+          type: string
         intermediate_certificate:
           example: |-
             -----BEGIN CERTIFICATE-----
             MIID...-----END CERTIFICATE-----
           minLength: 1
+          type: string
       required:
       - certificate
       - certificate_key
@@ -3488,6 +3735,7 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         forward_scheme:
           enum:
@@ -3518,6 +3766,10 @@ components:
         hsts_subdomains:
           description: Is HSTS applicable to all subdomains
           example: true
+          type: boolean
+        trust_forwarded_proto:
+          description: Trust the forwarded headers
+          example: false
           type: boolean
         http2_support:
           description: HTTP2 Protocol Support
@@ -3561,20 +3813,24 @@ components:
           items:
             $ref: "#/components/schemas/getProxyHosts_200_response_inner_locations_inner"
           minItems: 0
+          type: array
     requestToken_request:
       additionalProperties: {}
       properties:
         identity:
           example: me@example.com
           minLength: 1
+          type: string
         scope:
           enum:
           - user
           example: user
           minLength: 1
+          type: string
         secret:
           example: bigredhorsebanana
           minLength: 1
+          type: string
       required:
       - identity
       - secret
@@ -3611,7 +3867,38 @@ components:
           email: jc@jc21.com
         udp_forwarding: false
         owner_user_id: 2
-        certificate: ""
+        certificate:
+          modified_on: 2025-10-28T04:17:54.000Z
+          owner:
+            modified_on: 2020-01-30T09:41:04.000Z
+            created_on: 2020-01-30T09:36:08.000Z
+            permissions:
+              access_lists: hidden
+              visibility: all
+              certificates: view
+              streams: manage
+              redirection_hosts: manage
+              dead_hosts: manage
+              proxy_hosts: manage
+            is_disabled: true
+            roles:
+            - admin
+            name: Jamie Curnow
+            nickname: James
+            id: 1
+            avatar: //www.gravatar.com/avatar/6193176330f8d38747f038c170ddb193?default=mm
+            email: jc@jc21.com
+          created_on: 2025-10-28T04:17:54.000Z
+          owner_user_id: 2
+          provider: letsencrypt
+          meta:
+            dns_challenge: false
+          expires_on: 2025-10-28T04:17:54.000Z
+          id: 11
+          nice_name: My Custom Cert
+          domain_names:
+          - example.com
+          - www.example.com
         tcp_forwarding: true
         enabled: false
         certificate_id: 5
@@ -3646,12 +3933,14 @@ components:
           example: 9090
           maximum: 65535
           minimum: 1
+          type: integer
         forwarding_host:
           $ref: "#/components/schemas/getStreams_200_response_inner_forwarding_host"
         forwarding_port:
           example: 80
           maximum: 65535
           minimum: 1
+          type: integer
         tcp_forwarding:
           example: true
           type: boolean
@@ -3668,7 +3957,7 @@ components:
           example: {}
           type: object
         certificate:
-          $ref: "#/components/schemas/getRedirectionHosts_200_response_inner_certificate"
+          $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate"
         owner:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
       required:
@@ -3699,14 +3988,17 @@ components:
           description: Setting ID
           example: default-site
           minLength: 1
+          type: string
         name:
           description: Setting Display Name
           example: Default Site
           minLength: 1
+          type: string
         description:
           description: Meaningful description
           example: What to show when Nginx is hit with an unknown Host
           minLength: 1
+          type: string
         value:
           $ref: "#/components/schemas/getSettings_200_response_inner_value"
         meta:
@@ -3714,115 +4006,16 @@ components:
           example:
             redirect: http://example.com
             html: <h1>404</h1>
+          type: object
       required:
       - description
       - id
       - meta
       - name
       - value
-    getAuditLog_200_response:
-      additionalProperties: {}
-      description: Audit Log object
-      example:
-        modified_on: 2025-10-28T04:17:54.000Z
-        created_on: 2025-10-28T04:17:54.000Z
-        user_id: 2
-        object_type: certificate
-        meta: {}
-        action: created
-        id: 11
-        object_id: 11
-        user:
-          modified_on: 2020-01-30T09:41:04.000Z
-          created_on: 2020-01-30T09:36:08.000Z
-          permissions:
-            access_lists: hidden
-            visibility: all
-            certificates: view
-            streams: manage
-            redirection_hosts: manage
-            dead_hosts: manage
-            proxy_hosts: manage
-          is_disabled: true
-          roles:
-          - admin
-          name: Jamie Curnow
-          nickname: James
-          id: 1
-          avatar: //www.gravatar.com/avatar/6193176330f8d38747f038c170ddb193?default=mm
-          email: jc@jc21.com
-      properties:
-        id:
-          description: Unique identifier
-          example: 11
-          minimum: 1
-          readOnly: true
-          type: integer
-        created_on:
-          description: Date and time of creation
-          example: 2025-10-28T04:17:54.000Z
-          readOnly: true
-          type: string
-        modified_on:
-          description: Date and time of last update
-          example: 2025-10-28T04:17:54.000Z
-          readOnly: true
-          type: string
-        user_id:
-          description: User ID
-          example: 2
-          minimum: 1
-          type: integer
-        object_type:
-          example: certificate
-        object_id:
-          description: Unique identifier
-          example: 11
-          minimum: 1
-          readOnly: true
-          type: integer
-        action:
-          example: created
-        meta:
-          example: {}
-          type: object
-        user:
-          $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
-      required:
-      - action
-      - created_on
-      - id
-      - meta
-      - modified_on
-      - object_id
-      - object_type
-      - user_id
     getProxyHosts_200_response_inner:
       description: Proxy Host object
       example:
-        modified_on: 2025-10-28T04:17:54.000Z
-        owner:
-          modified_on: 2020-01-30T09:41:04.000Z
-          created_on: 2020-01-30T09:36:08.000Z
-          permissions:
-            access_lists: hidden
-            visibility: all
-            certificates: view
-            streams: manage
-            redirection_hosts: manage
-            dead_hosts: manage
-            proxy_hosts: manage
-          is_disabled: true
-          roles:
-          - admin
-          name: Jamie Curnow
-          nickname: James
-          id: 1
-          avatar: //www.gravatar.com/avatar/6193176330f8d38747f038c170ddb193?default=mm
-          email: jc@jc21.com
-        http2_support: true
-        owner_user_id: 2
-        ssl_forced: true
         access_list_id: 3
         hsts_enabled: true
         certificate:
@@ -3858,6 +4051,34 @@ components:
           - example.com
           - www.example.com
         hsts_subdomains: true
+        enabled: false
+        certificate_id: 5
+        trust_forwarded_proto: false
+        forward_port: 8080
+        id: 11
+        modified_on: 2025-10-28T04:17:54.000Z
+        owner:
+          modified_on: 2020-01-30T09:41:04.000Z
+          created_on: 2020-01-30T09:36:08.000Z
+          permissions:
+            access_lists: hidden
+            visibility: all
+            certificates: view
+            streams: manage
+            redirection_hosts: manage
+            dead_hosts: manage
+            proxy_hosts: manage
+          is_disabled: true
+          roles:
+          - admin
+          name: Jamie Curnow
+          nickname: James
+          id: 1
+          avatar: //www.gravatar.com/avatar/6193176330f8d38747f038c170ddb193?default=mm
+          email: jc@jc21.com
+        http2_support: true
+        owner_user_id: 2
+        ssl_forced: true
         access_list:
           modified_on: 2025-10-28T04:17:54.000Z
           pass_auth: false
@@ -3869,24 +4090,20 @@ components:
           id: 11
           satisfy_any: true
         allow_websocket_upgrade: true
-        enabled: false
         domain_names:
         - example.com
         - www.example.com
-        certificate_id: 5
         forward_scheme: http
         advanced_config: ""
         created_on: 2025-10-28T04:17:54.000Z
         meta:
           nginx_online: true
           nginx_err: null
-        forward_port: 8080
         locations:
         - path: /app
           forward_scheme: http
           forward_host: example.com
           forward_port: 80
-        id: 11
         forward_host: 127.0.0.1
         caching_enabled: true
         block_exploits: false
@@ -3997,6 +4214,10 @@ components:
           description: Is HSTS applicable to all subdomains
           example: true
           type: boolean
+        trust_forwarded_proto:
+          description: Trust the forwarded headers
+          example: false
+          type: boolean
         certificate:
           $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate"
         owner:
@@ -4025,6 +4246,24 @@ components:
       - modified_on
       - owner_user_id
       - ssl_forced
+      - trust_forwarded_proto
+    getUser2faStatus_200_response:
+      additionalProperties: {}
+      example:
+        backup_codes_remaining: 5
+        enabled: true
+      properties:
+        enabled:
+          description: Is 2FA enabled for this user
+          example: true
+          type: boolean
+        backup_codes_remaining:
+          description: Number of remaining backup codes for this user
+          example: 5
+          type: integer
+      required:
+      - backup_codes_remaining
+      - enabled
     testHttpReach_request:
       additionalProperties: {}
       properties:
@@ -4035,8 +4274,10 @@ components:
           - www.example.com
           items:
             pattern: "^[^&| @!#%^();:/\\\\}{=+?<>,~`'\"]+$"
+            type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
       required:
       - domains
@@ -4053,6 +4294,7 @@ components:
           - html
           example: html
           minLength: 1
+          type: string
         meta:
           $ref: "#/components/schemas/updateSetting_request_meta"
     getAuditLogs_200_response_inner:
@@ -4092,20 +4334,25 @@ components:
           example: 11
           minimum: 1
           readOnly: true
+          type: integer
         created_on:
           description: Date and time of creation
           example: 2025-10-28T04:17:54.000Z
           readOnly: true
+          type: string
         modified_on:
           description: Date and time of last update
           example: 2025-10-28T04:17:54.000Z
           readOnly: true
+          type: string
         user_id:
           description: User ID
           example: 2
           minimum: 1
+          type: integer
         object_type:
           example: certificate
+          type: string
         object_id:
           description: Unique identifier
           example: 11
@@ -4114,8 +4361,10 @@ components:
           type: integer
         action:
           example: created
+          type: string
         meta:
           example: {}
+          type: object
         user:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
       required:
@@ -4155,7 +4404,38 @@ components:
         owner_user_id: 2
         ssl_forced: true
         hsts_enabled: true
-        certificate: ""
+        certificate:
+          modified_on: 2025-10-28T04:17:54.000Z
+          owner:
+            modified_on: 2020-01-30T09:41:04.000Z
+            created_on: 2020-01-30T09:36:08.000Z
+            permissions:
+              access_lists: hidden
+              visibility: all
+              certificates: view
+              streams: manage
+              redirection_hosts: manage
+              dead_hosts: manage
+              proxy_hosts: manage
+            is_disabled: true
+            roles:
+            - admin
+            name: Jamie Curnow
+            nickname: James
+            id: 1
+            avatar: //www.gravatar.com/avatar/6193176330f8d38747f038c170ddb193?default=mm
+            email: jc@jc21.com
+          created_on: 2025-10-28T04:17:54.000Z
+          owner_user_id: 2
+          provider: letsencrypt
+          meta:
+            dns_challenge: false
+          expires_on: 2025-10-28T04:17:54.000Z
+          id: 11
+          nice_name: My Custom Cert
+          domain_names:
+          - example.com
+          - www.example.com
         hsts_subdomains: true
         enabled: false
         domain_names:
@@ -4198,6 +4478,7 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         certificate_id:
           $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate_id"
@@ -4228,7 +4509,7 @@ components:
           example: {}
           type: object
         certificate:
-          $ref: "#/components/schemas/getRedirectionHosts_200_response_inner_certificate"
+          $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate"
         owner:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
       required:
@@ -4274,7 +4555,38 @@ components:
         owner_user_id: 2
         ssl_forced: true
         hsts_enabled: true
-        certificate: ""
+        certificate:
+          modified_on: 2025-10-28T04:17:54.000Z
+          owner:
+            modified_on: 2020-01-30T09:41:04.000Z
+            created_on: 2020-01-30T09:36:08.000Z
+            permissions:
+              access_lists: hidden
+              visibility: all
+              certificates: view
+              streams: manage
+              redirection_hosts: manage
+              dead_hosts: manage
+              proxy_hosts: manage
+            is_disabled: true
+            roles:
+            - admin
+            name: Jamie Curnow
+            nickname: James
+            id: 1
+            avatar: //www.gravatar.com/avatar/6193176330f8d38747f038c170ddb193?default=mm
+            email: jc@jc21.com
+          created_on: 2025-10-28T04:17:54.000Z
+          owner_user_id: 2
+          provider: letsencrypt
+          meta:
+            dns_challenge: false
+          expires_on: 2025-10-28T04:17:54.000Z
+          id: 11
+          nice_name: My Custom Cert
+          domain_names:
+          - example.com
+          - www.example.com
         hsts_subdomains: true
         preserve_path: true
         forward_http_code: 302
@@ -4323,25 +4635,30 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         forward_http_code:
           description: Redirect HTTP Status Code
           example: 302
           maximum: 308
           minimum: 300
+          type: integer
         forward_scheme:
           enum:
           - auto
           - http
           - https
           example: http
+          type: string
         forward_domain_name:
           description: Domain Name
           example: jc21.com
           pattern: "^(?:[^.*]+\\.?)+[^.]$"
+          type: string
         preserve_path:
           description: Should the path be preserved
           example: true
+          type: boolean
         certificate_id:
           $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate_id"
         ssl_forced:
@@ -4377,7 +4694,7 @@ components:
             nginx_err: null
           type: object
         certificate:
-          $ref: "#/components/schemas/getRedirectionHosts_200_response_inner_certificate"
+          $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate"
         owner:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
       required:
@@ -4409,9 +4726,11 @@ components:
         expires:
           description: Token Expiry ISO Time String
           example: 2025-02-04T20:40:46.340Z
+          type: string
         token:
           description: JWT Token
           example: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.ey...xaHKYr3Kk6MvkUjcC4
+          type: string
       required:
       - expires
       - token
@@ -4425,25 +4744,33 @@ components:
         id:
           description: "Unique identifier for the DNS provider, matching the python\
             \ package"
+          type: string
         name:
           description: Human-readable name of the DNS provider
+          type: string
         credentials:
           description: Instructions on how to format the credentials for this DNS
             provider
+          type: string
       required:
       - credentials
       - id
       - name
-    updateAccessList_request_items_inner:
+    loginWith2FA_request:
       additionalProperties: {}
-      example:
-        username: admin
-        password: pass
       properties:
-        username:
+        challenge_token:
+          example: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.ey...xaHKYr3Kk6MvkUjcC4
           minLength: 1
           type: string
-        password: {}
+        code:
+          example: "012345"
+          maxLength: 8
+          minLength: 6
+          type: string
+      required:
+      - challenge_token
+      - code
     createUser_request:
       additionalProperties: {}
       properties:
@@ -4451,26 +4778,33 @@ components:
           description: Name
           example: Jamie Curnow
           minLength: 1
+          type: string
         nickname:
           description: Nickname
           example: James
+          type: string
         email:
           description: Email
           example: jc@jc21.com
           minLength: 3
+          type: string
         roles:
           description: Roles applied
           example:
           - admin
-          items: {}
+          items:
+            type: string
+          type: array
         is_disabled:
           description: Is user Disabled
           example: true
+          type: boolean
         auth:
           description: Auth Credentials
           example:
             type: password
             secret: bigredhorsebanana
+          type: object
       required:
       - email
       - name
@@ -4549,6 +4883,7 @@ components:
           - allow
           - deny
           example: allow
+          type: string
     updateUser_request:
       additionalProperties: {}
       minProperties: 1
@@ -4557,21 +4892,27 @@ components:
           description: Name
           example: Jamie Curnow
           minLength: 1
+          type: string
         nickname:
           description: Nickname
           example: James
+          type: string
         email:
           description: Email
           example: jc@jc21.com
           minLength: 3
+          type: string
         roles:
           description: Roles applied
           example:
           - admin
-          items: {}
+          items:
+            type: string
+          type: array
         is_disabled:
           description: Is user Disabled
           example: true
+          type: boolean
     createProxyHost_request:
       additionalProperties: {}
       properties:
@@ -4585,6 +4926,7 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         forward_scheme:
           enum:
@@ -4615,6 +4957,10 @@ components:
         hsts_subdomains:
           description: Is HSTS applicable to all subdomains
           example: true
+          type: boolean
+        trust_forwarded_proto:
+          description: Trust the forwarded headers
+          example: false
           type: boolean
         http2_support:
           description: HTTP2 Protocol Support
@@ -4658,6 +5004,7 @@ components:
           items:
             $ref: "#/components/schemas/getProxyHosts_200_response_inner_locations_inner"
           minItems: 0
+          type: array
       required:
       - domain_names
       - forward_host
@@ -4676,6 +5023,7 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         certificate_id:
           $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate_id"
@@ -4712,8 +5060,10 @@ components:
       properties:
         code:
           example: 400
+          type: integer
         message:
           example: Bad Request
+          type: string
       required:
       - code
       - message
@@ -4723,8 +5073,10 @@ components:
         from: 1728448218
         to: 1736224217
       properties:
-        from: {}
-        to: {}
+        from:
+          type: integer
+        to:
+          type: integer
       required:
       - from
       - to
@@ -4742,25 +5094,30 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         forward_http_code:
           description: Redirect HTTP Status Code
           example: 302
           maximum: 308
           minimum: 300
+          type: integer
         forward_scheme:
           enum:
           - auto
           - http
           - https
           example: http
+          type: string
         forward_domain_name:
           description: Domain Name
           example: jc21.com
           pattern: "^(?:[^.*]+\\.?)+[^.]$"
+          type: string
         preserve_path:
           description: Should the path be preserved
           example: true
+          type: boolean
         certificate_id:
           $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate_id"
         ssl_forced:
@@ -4796,8 +5153,11 @@ components:
       - description: Domain Name
         example: example.com
         pattern: "^(?:[^.*]+\\.?)+[^.]$"
+        type: string
       - format: "^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$"
+        type: string
       - format: ipv6
+        type: string
       example: example.com
     updateAccessList_request:
       additionalProperties: {}
@@ -4818,13 +5178,15 @@ components:
           - username: admin
             password: pass
           items:
-            $ref: "#/components/schemas/updateAccessList_request_items_inner"
+            $ref: "#/components/schemas/createAccessList_request_items_inner"
+          type: array
         clients:
           example:
           - directive: allow
             address: 192.168.0.0/24
           items:
             $ref: "#/components/schemas/createAccessList_request_clients_inner"
+          type: array
     getProxyHosts_200_response_inner_certificate_id:
       anyOf:
       - example: 5
@@ -4839,8 +5201,11 @@ components:
       example: 192.168.0.11
       oneOf:
       - pattern: "^([0-9]{1,3}\\.){3}[0-9]{1,3}(/([0-9]|[1-2][0-9]|3[0-2]))?$"
+        type: string
       - pattern: "^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$"
+        type: string
       - pattern: ^all$
+        type: string
     getCertificates_200_response_inner_meta:
       additionalProperties: {}
       example:
@@ -4852,12 +5217,23 @@ components:
         certificate_key:
           minLength: 1
           type: string
-        dns_challenge: {}
-        dns_provider_credentials: {}
-        dns_provider: {}
-        letsencrypt_certificate: {}
+        dns_challenge:
+          type: boolean
+        dns_provider_credentials:
+          type: string
+        dns_provider:
+          type: string
+        letsencrypt_certificate:
+          type: object
         propagation_seconds:
           minimum: 0
+          type: integer
+        key_type:
+          default: rsa
+          enum:
+          - rsa
+          - ecdsa
+          type: string
     reportsHosts_200_response:
       example:
         proxy: 20
@@ -4881,6 +5257,32 @@ components:
           description: 404 Hosts Count
           example: 3
           type: integer
+    checkVersion_200_response:
+      additionalProperties: {}
+      description: Check Version object
+      example:
+        current: v2.10.1
+        update_available: true
+        latest: v2.13.4
+      properties:
+        current:
+          description: Current version string
+          example: v2.10.1
+          nullable: true
+          type: string
+        latest:
+          description: Latest version string
+          example: v2.13.4
+          nullable: true
+          type: string
+        update_available:
+          description: Whether there's an update available
+          example: true
+          type: boolean
+      required:
+      - current
+      - latest
+      - update_available
     createRedirectionHost_request:
       additionalProperties: {}
       properties:
@@ -4894,25 +5296,30 @@ components:
             type: string
           maxItems: 100
           minItems: 1
+          type: array
           uniqueItems: true
         forward_http_code:
           description: Redirect HTTP Status Code
           example: 302
           maximum: 308
           minimum: 300
+          type: integer
         forward_scheme:
           enum:
           - auto
           - http
           - https
           example: http
+          type: string
         forward_domain_name:
           description: Domain Name
           example: jc21.com
           pattern: "^(?:[^.*]+\\.?)+[^.]$"
+          type: string
         preserve_path:
           description: Should the path be preserved
           example: true
+          type: boolean
         certificate_id:
           $ref: "#/components/schemas/getProxyHosts_200_response_inner_certificate_id"
         ssl_forced:
@@ -4957,6 +5364,25 @@ components:
       properties:
         error:
           $ref: "#/components/schemas/createCertificate_400_response_error"
+    requestToken_200_response_oneOf:
+      additionalProperties: {}
+      description: Token object
+      properties:
+        requires_2fa:
+          description: Whether this token request requires two-factor authentication
+          example: true
+          type: boolean
+        challenge_token:
+          description: Challenge Token used in subsequent 2FA verification
+          example: eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.ey...xaHKYr3Kk6MvkUjcC4
+          type: string
+      required:
+      - challenge_token
+      - requires_2fa
+    requestToken_200_response:
+      oneOf:
+      - $ref: "#/components/schemas/refreshToken_200_response"
+      - $ref: "#/components/schemas/requestToken_200_response_oneOf"
     getCertificates_200_response_inner:
       additionalProperties: {}
       description: Certificate object
@@ -5017,9 +5443,11 @@ components:
         provider:
           example: letsencrypt
           pattern: ^(letsencrypt|other)$
+          type: string
         nice_name:
           description: Nice Name for the custom certificate
           example: My Custom Cert
+          type: string
         domain_names:
           description: Domain Names separated by a comma
           example:
@@ -5027,12 +5455,15 @@ components:
           - www.example.com
           items:
             pattern: "^[^&| @!#%^();:/\\\\}{=+?<>,~`'\"]+$"
+            type: string
           maxItems: 100
+          type: array
           uniqueItems: true
         expires_on:
           description: Date and time of expiration
           example: 2025-10-28T04:17:54.000Z
           readOnly: true
+          type: string
         owner:
           $ref: "#/components/schemas/getAuditLogs_200_response_inner_user"
         meta:
@@ -5061,9 +5492,11 @@ components:
         status:
           description: Healthy
           example: OK
+          type: string
         setup:
           description: Whether the initial setup has been completed
           example: true
+          type: boolean
         version:
           $ref: "#/components/schemas/health_200_response_version"
       required:
@@ -5131,6 +5564,36 @@ components:
       - pass_auth
       - proxy_host_count
       - satisfy_any
+    enableUser2fa_200_response:
+      additionalProperties: {}
+      example:
+        backup_codes:
+        - 6CD7CB06
+        - 495302F3
+        - D8037852
+        - A6FFC956
+        - BC1A1851
+        - A05E644F
+        - A406D2E8
+        - 0AE3C522
+      properties:
+        backup_codes:
+          description: Backup codes
+          example:
+          - 6CD7CB06
+          - 495302F3
+          - D8037852
+          - A6FFC956
+          - BC1A1851
+          - A05E644F
+          - A406D2E8
+          - 0AE3C522
+          items:
+            example: 6CD7CB06
+            type: string
+          type: array
+      required:
+      - backup_codes
     createAccessList_request_items_inner:
       additionalProperties: {}
       example:
@@ -5139,11 +5602,32 @@ components:
       properties:
         username:
           minLength: 1
-        password: {}
+          type: string
+        password:
+          type: string
+    setupUser2fa_200_response:
+      additionalProperties: {}
+      example:
+        otpauth_url: otpauth://totp/Nginx%20Proxy%20Manager:jc%40jc21.com?secret=JZYCEBIEEJYUGPQM&period=30&digits=6&algorithm=SHA1&issuer=Nginx%20Proxy%20Manager
+        secret: JZYCEBIEEJYUGPQM
+      properties:
+        secret:
+          description: TOTP Secret
+          example: JZYCEBIEEJYUGPQM
+          type: string
+        otpauth_url:
+          description: OTP Auth URL for QR Code generation
+          example: otpauth://totp/Nginx%20Proxy%20Manager:jc%40jc21.com?secret=JZYCEBIEEJYUGPQM&period=30&digits=6&algorithm=SHA1&issuer=Nginx%20Proxy%20Manager
+          type: string
+      required:
+      - otpauth_url
+      - secret
     getProxyHosts_200_response_inner_locations_inner:
       additionalProperties: {}
       properties:
-        id: {}
+        id:
+          nullable: true
+          type: integer
         path:
           minLength: 1
           type: string
@@ -5163,8 +5647,10 @@ components:
           maximum: 65535
           minimum: 1
           type: integer
-        forward_path: {}
-        advanced_config: {}
+        forward_path:
+          type: string
+        advanced_config:
+          type: string
       required:
       - forward_host
       - forward_port

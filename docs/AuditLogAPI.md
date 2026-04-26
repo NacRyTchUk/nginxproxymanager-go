@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 ## GetAuditLog
 
-> GetAuditLog200Response GetAuditLog(ctx, id).Execute()
+> GetAuditLogs200ResponseInner GetAuditLog(ctx, id).Execute()
 
 Get Audit Log Event
 
@@ -37,7 +37,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error when calling `AuditLogAPI.GetAuditLog``: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
-	// response from `GetAuditLog`: GetAuditLog200Response
+	// response from `GetAuditLog`: GetAuditLogs200ResponseInner
 	fmt.Fprintf(os.Stdout, "Response from `AuditLogAPI.GetAuditLog`: %v\n", resp)
 }
 ```
@@ -61,7 +61,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**GetAuditLog200Response**](GetAuditLog200Response.md)
+[**GetAuditLogs200ResponseInner**](GetAuditLogs200ResponseInner.md)
 
 ### Authorization
 

@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **DnsProvider** | Pointer to **string** |  | [optional] 
 **LetsencryptCertificate** | Pointer to **map[string]interface{}** |  | [optional] 
 **PropagationSeconds** | Pointer to **int64** |  | [optional] 
+**KeyType** | Pointer to **string** |  | [optional] [default to "rsa"]
 
 ## Methods
 
@@ -205,6 +206,31 @@ SetPropagationSeconds sets PropagationSeconds field to given value.
 `func (o *GetCertificates200ResponseInnerMeta) HasPropagationSeconds() bool`
 
 HasPropagationSeconds returns a boolean if a field has been set.
+
+### GetKeyType
+
+`func (o *GetCertificates200ResponseInnerMeta) GetKeyType() string`
+
+GetKeyType returns the KeyType field if non-nil, zero value otherwise.
+
+### GetKeyTypeOk
+
+`func (o *GetCertificates200ResponseInnerMeta) GetKeyTypeOk() (*string, bool)`
+
+GetKeyTypeOk returns a tuple with the KeyType field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetKeyType
+
+`func (o *GetCertificates200ResponseInnerMeta) SetKeyType(v string)`
+
+SetKeyType sets KeyType field to given value.
+
+### HasKeyType
+
+`func (o *GetCertificates200ResponseInnerMeta) HasKeyType() bool`
+
+HasKeyType returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

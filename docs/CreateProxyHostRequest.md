@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **SslForced** | Pointer to **bool** | Is SSL Forced | [optional] 
 **HstsEnabled** | Pointer to **bool** | Is HSTS Enabled | [optional] 
 **HstsSubdomains** | Pointer to **bool** | Is HSTS applicable to all subdomains | [optional] 
+**TrustForwardedProto** | Pointer to **bool** | Trust the forwarded headers | [optional] 
 **Http2Support** | Pointer to **bool** | HTTP2 Protocol Support | [optional] 
 **BlockExploits** | Pointer to **bool** | Should we block common exploits | [optional] 
 **CachingEnabled** | Pointer to **bool** | Should we cache assets | [optional] 
@@ -220,6 +221,31 @@ SetHstsSubdomains sets HstsSubdomains field to given value.
 `func (o *CreateProxyHostRequest) HasHstsSubdomains() bool`
 
 HasHstsSubdomains returns a boolean if a field has been set.
+
+### GetTrustForwardedProto
+
+`func (o *CreateProxyHostRequest) GetTrustForwardedProto() bool`
+
+GetTrustForwardedProto returns the TrustForwardedProto field if non-nil, zero value otherwise.
+
+### GetTrustForwardedProtoOk
+
+`func (o *CreateProxyHostRequest) GetTrustForwardedProtoOk() (*bool, bool)`
+
+GetTrustForwardedProtoOk returns a tuple with the TrustForwardedProto field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTrustForwardedProto
+
+`func (o *CreateProxyHostRequest) SetTrustForwardedProto(v bool)`
+
+SetTrustForwardedProto sets TrustForwardedProto field to given value.
+
+### HasTrustForwardedProto
+
+`func (o *CreateProxyHostRequest) HasTrustForwardedProto() bool`
+
+HasTrustForwardedProto returns a boolean if a field has been set.
 
 ### GetHttp2Support
 
